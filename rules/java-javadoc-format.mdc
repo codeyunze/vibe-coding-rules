@@ -1,0 +1,137 @@
+---
+description: Java Javadoc（/** */）注释格式与使用规范
+globs: **/*.java
+alwaysApply: true
+---
+
+# Java Javadoc 格式规范
+
+## 何时写哪种注释
+
+| 场景 | 格式 | 说明 |
+|------|------|------|
+| 类、public/protected 方法 | 块 Javadoc `/** ... */` | 说明职责、约束、参数 |
+| 字段（含义不直观时） | 块 Javadoc `/** ... */` | 紧挨字段上方，多行块格式 |
+| 方法内步骤、临时说明 | 行注释 `//` | 不用 Javadoc |
+| 代码自解释（getter、简单赋值） | 不写 | 避免噪音 |
+
+## 字段块注释（`/** ... */`）
+
+- 凡使用 `/** */`，**必须**采用多行块格式，禁止单行 `/** 说明 */`
+- 注释与字段之间**不留空行**
+- 只说明「是什么 / 用于什么」，不重复类型信息
+
+```java
+// ✅ GOOD
+/**
+ * 普通业务目标库
+ */
+private final MongoTemplate targetTemplate;
+/**
+ * 累计成功写入条数（运维统计用）
+ */
+private final AtomicLong totalConsumed = new AtomicLong(0);
+
+// ❌ BAD：单行 Javadoc
+/** 普通业务目标库 */
+private final MongoTemplate targetTemplate;
+
+// ❌ BAD：字段与注释之间插空行
+/**
+ * 普通业务目标库
+ */
+
+private final MongoTemplate targetTemplate;
+```
+
+## 类 / 方法块注释
+
+- 第一段直接写摘要，**不要**连续多个 `<p>` 空段
+- 列表 `<ul>` / `<ol>` 内条目之间**不要**插空行
+- `@param` / `@return` 与正文之间只保留**一个**空行
+- 描述泛型、比较符时直接用 `<>`，禁止 HTML 实体 `&lt;` `&gt;`
+
+```java
+// ✅ GOOD
+/**
+ * Kafka → Mongo 目标库消费者。
+ * <p>
+ * 职责：监听同步 topic，解析 upsert 消息后写入目标库。
+ * <ul>
+ *   <li>按 _id upsert，幂等可重试</li>
+ *   <li>写入成功后才手动 ack</li>
+ * </ul>
+ */
+public class KafkaToMongoConsumer { ... }
+
+/**
+ * 批量 upsert 到目标 MongoDB。
+ *
+ * @param targetCollection 目标库 collection 名
+ * @param documents        待写入文档列表
+ */
+private void upsertBatch(String targetCollection, List<Document> documents) { ... }
+
+// ❌ BAD：Javadoc 内每行之间都空一行
+/**
+ *
+ * Kafka 消费者
+ *
+ * <p>
+ *
+ * 职责：...
+ *
+ */
+```
+
+## 代码体格式（与 Javadoc 配套）
+
+- import 之间、语句之间**不要**每行都插空行
+- Javadoc 写完后，下一行紧跟注解或声明
+
+```java
+// ✅ GOOD
+/**
+ * 多 collection 并行拉取线程池
+ */
+private final Executor syncProducerExecutor;
+
+public void produceAllTables() {
+    String[] collections = configProperties.getCollectionArray();
+    if (collections.length == 0) {
+        return;
+    }
+    for (String collection : collections) {
+        ...
+    }
+}
+
+// ❌ BAD
+public void produceAllTables() {
+
+    String[] collections = configProperties.getCollectionArray();
+
+    if (collections.length == 0) {
+
+        return;
+
+    }
+
+}
+```
+
+## 链接与代码片段
+
+- 引用类/方法用 `{@link ClassName#method}`
+- 内联代码用 `{@code xxx}`，不用反引号
+
+```java
+/**
+ * topic 由 {@link SyncTopicResolver#topics()} 动态解析
+ */
+```
+
+## 原则
+
+- 注释解释**为什么 / 约束**，不复述代码字面意思
+- `/** */` 统一多行块格式；块内保持紧凑，不人为撑行数

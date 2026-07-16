@@ -1,0 +1,43 @@
+---
+description: MySQL 建表与索引约定（新表必含基础字段与 COMMENT）
+globs: "**/*.{sql,xml}"
+alwaysApply: false
+---
+
+# MySQL 建表约定
+
+## 新表必备基础字段
+
+无特别说明时，每张表必须包含：
+
+```sql
+`id`          bigint       NOT NULL COMMENT '主键标识',
+`create_time` datetime     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+`update_time` datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+`invalid`     bigint       NOT NULL DEFAULT 0 COMMENT '数据是否有效：0数据有效',
+PRIMARY KEY (`id`)
+```
+
+- **每个字段都必须有 COMMENT**
+- 表必须有表级 COMMENT
+- 建议引擎 `InnoDB`，字符集 `utf8mb4`
+
+## 索引原则
+
+- 等值高频查询字段：单列索引；联合查询：最左前缀联合索引
+- 状态 + 时间类列表：`(status, create_time)` 等，避免冗余重复索引
+- 唯一业务键：`UNIQUE KEY`（注意逻辑删除字段参与唯一约束的设计）
+- 禁止无必要的超宽索引、禁止对大文本盲目建索引
+
+## 与存量库兼容
+
+- **改已有表**：对齐该表命名（可能是 `created_time`/`create_time`、`created_id`/`create_id`），勿混用
+- **新建表**：一律按上文基础字段；Entity 用驼峰 `createTime`/`updateTime`/`invalid`
+- 逻辑删除与 MyBatis-Plus `@TableLogic` 一致（存量常见：有效 `0`，删除写时间戳而非简单 `1`）
+- 主键默认 `bigint` 雪花；分页注意项目 `maxLimit`（常见上限 100）
+
+## 反例
+
+- 缺少 COMMENT、缺少 `invalid`、主键无说明
+- 随意使用 `SELECT *` 作为规范示例；业务 SQL 应明确列
+- 在业务库脚本中硬编码生产账号密码

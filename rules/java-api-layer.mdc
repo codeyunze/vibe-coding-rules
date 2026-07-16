@@ -1,0 +1,40 @@
+---
+description: Java 分层与 API 约定（Controller/Extend/Feign/Service/异常）
+globs: "**/{controller,extend,service,dto,vo,entity,mapper,feign}/**/*.java"
+alwaysApply: false
+---
+
+# Java 分层与 API 约定
+
+## 对外 REST（startup/controller）
+
+- 继承 `ApiController`，返回 `Result<T>` / `Result<ResultTable<T>>`
+- 路径：`{域}/{资源}`，如 `sys/dictionary`、`pms/product`
+- 习惯：`POST add|update|page`，`DELETE delete/{id}`，`GET {id}`
+- 入参：`XxxAddDto`/`UpdateDto`/`QueryDto` + `@Valid`；分页 `PageFilter<QueryDto>`
+- 权限：`@SaCheckPermission("api:{域}:{资源}:{动作}")`；公开接口 `@SaIgnore`
+- 构造器注入；Controller 不做业务与 Mapper 调用
+- 参考：`PmsProductController`、`SysDictionaryController`
+
+## 跨服务（Extend + Feign）
+
+- 路径：`extend/{域}/{资源}`；命名一律 `Extend*`
+- `*-interface` 定义 `ExtendXxxService`；**core** 与 **feign** 各一份实现
+- Feign：`@FeignClient(name = "mall-pms", path = "extend/...")`；校验 `result.getCode()`，失败抛 `BusinessException`
+- 参考：`ExtendPmsStockController` / `ExtendPmsStockFeign`
+
+## Service / 数据
+
+- Service 常 `extends IService<Entity>`，实现 `ServiceImpl<Mapper, Entity>`
+- 主键：雪花 `IdUtil.getSnowflakeNextId()`（或项目 `TableIdGenerator`）
+- 逻辑删除：`@TableLogic` 与表字段 `invalid` 对齐（存量常见 `value=0`，删除写时间戳）
+- DTO→Entity 可用 `BeanUtils.copyProperties`，与同模块一致即可
+
+## 异常
+
+- 业务：`BusinessException`；参数：`ParamsException` / Bean Validation
+- 统一由 `OverallExceptionHandle` 处理；禁止自造第二套响应体（如 `R`/`AjaxResult`）
+
+## 禁止
+
+- Controller 直操 Mapper；业务逻辑进 `mall-utils`；demo 依赖进生产模块

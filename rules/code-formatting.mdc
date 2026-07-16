@@ -1,0 +1,40 @@
+---
+description: java代码格式约定（全局适用）
+alwaysApply: true
+---
+
+# 代码格式
+
+- **避免无必要换行**：单行能表达清楚的语句、方法调用、赋值、`throw`，保持在一行；不要为了「对齐参数」而拆行
+- 仅在行过长（通常 >150 字符）、链式调用层次深、或拆行后明显更易读时再换行
+
+## 禁止拆行的典型场景
+
+| 场景 | 要求 |
+|------|------|
+| 局部变量声明 | `String[] payloads = new String[size];` 一行写完 |
+| 简单方法调用赋值 | `payloads[i] = objectMapper.writeValueAsString(...);` 一行写完 |
+| `throw` 语句 | 消息与 cause 同一行，字符串拼接不换行 |
+
+```java
+// ❌ 不必要换行：方法调用
+payloads[i] = objectMapper.writeValueAsString(
+        SyncKafkaMessage.build(originCollection, sourceDoc));
+
+// ✅ 保持一行
+payloads[i] = objectMapper.writeValueAsString(SyncKafkaMessage.build(originCollection, sourceDoc));
+
+// ❌ 不必要换行：throw
+throw new IllegalStateException("构建 Kafka 消息失败: _id="
+        + sourceDoc.getObjectId("_id"), ex);
+
+// ✅ 保持一行
+throw new IllegalStateException("构建 Kafka 消息失败: _id=" + sourceDoc.getObjectId("_id"), ex);
+
+// ❌ 不必要换行：readValue
+Map<String, Object> message = objectMapper.readValue(
+        record, new TypeReference<Map<String, Object>>() {});
+
+// ✅ 保持一行
+Map<String, Object> message = objectMapper.readValue(record, new TypeReference<Map<String, Object>>() {});
+```

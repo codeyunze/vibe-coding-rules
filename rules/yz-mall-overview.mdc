@@ -1,0 +1,43 @@
+---
+description: yz-mall 项目总览与协作边界（技术栈、模块分层、沟通约定）
+alwaysApply: true
+---
+
+# yz-mall 项目总览
+
+## 技术栈
+
+- Java 17、Spring Boot 3.4.x、Spring Cloud 2024.x、Spring Cloud Alibaba
+- MyBatis-Plus、Nacos、Sa-Token、Redis/Redisson、OpenFeign、RocketMQ（业务）
+- 统一响应：`com.yz.mall.base.Result` / `ResultTable`；基类 `ApiController`
+- 版本以根 `yz-mall/pom.xml` 为准（文档可能滞后）
+
+## 顶层模块
+
+| 模块 | 职责 |
+|------|------|
+| `mall-gateway` | 网关（约 30001） |
+| `mall-admin`（mall-sys） | 系统管理（约 30004） |
+| `mall-pms` / `mall-oms` | 商品 / 订单（约 30005 / 30006） |
+| `mall-auth` | 认证 |
+| `mall-utils` | 公共能力，禁止塞业务逻辑 |
+| `mall-demo` | POC，禁止被生产模块依赖 |
+
+## 业务域标准分层
+
+```
+{domain}-interface  → Extend* 接口与跨服务 DTO/VO
+{domain}-dao        → Entity / Mapper（常含本域 DTO/VO）
+{domain}-core       → Service / 本地 Extend*ServiceImpl
+{domain}-feign      → @FeignClient + 远程 Extend*ServiceImpl
+{domain}-startup    → Controller / ExtendController / Application
+```
+
+- startup 依赖 core；跨服务依赖对方 `*-feign`
+- 包名：`com.yz.mall.{域}`；类前缀 `Sys`/`Pms`/`Oms`/`Auth`
+
+## 协作约定
+
+- 对用户回复使用**简体中文**
+- 最小必要改动；对齐同目录风格；未要求不新建文档、不主动 commit
+- 密钥只用环境变量占位，禁止硬编码

@@ -1,0 +1,20 @@
+---
+description: Agent 沟通与协作约定（全局适用）
+alwaysApply: true
+---
+
+# 沟通与协作
+
+- 始终使用**简体中文**回复
+- 引用代码使用 `` `startLine:endLine:filepath` `` 格式，便于 IDE 跳转
+- **未经明确要求不得** `git commit`、push 或创建 PR
+- 创建 commit / PR 时遵循仓库已有 message 风格，不用 `-i` 交互命令
+- 回答保持简洁；复杂架构用 mermaid 说明，避免无意义收尾套话
+
+# 代码注释
+
+- **类、public/protected 方法**必须有注释（块 Javadoc `/** ... */`），说明职责或用途
+- **字段**仅在含义不直观时注释；方法内步骤用行注释 `//`，简单 getter/赋值可不写
+- 注释**宜短**：一两句说清「是什么 / 为什么」，不要复述代码字面意思
+- 仅当业务逻辑**较复杂**（多分支、非常规约束、易误解的边界）时才展开多段或列表说明
+- Javadoc 格式遵循同目录 `java-javadoc-format.mdc`
