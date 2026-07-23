@@ -1,0 +1,37 @@
+---
+description: 前端未使用变量/导入须删除或改用 _ 前缀（对齐 ESLint）
+globs: yz-mall-web-admin-pc/**/*.{ts,tsx,vue,js,jsx}
+alwaysApply: false
+---
+
+# 前端未使用变量（ESLint）
+
+编辑 `yz-mall-web-admin-pc` 时遵守 `@typescript-eslint/no-unused-vars` / `no-unused-vars`（见 `eslint.config.js`）：
+
+- `argsIgnorePattern` / `varsIgnorePattern`：仅允许以 `_` 开头的未使用标识符（`/^_/u`）
+
+## 要求
+
+1. **未使用的 import / 类型 import**：直接删除（如 `type Ref`、未用到的组件）
+2. **必须保留的形参或解构**：命名改为 `_xxx`（如 `_row`、`_index`）
+3. **禁止**留下既未使用又不带 `_` 前缀的变量/导入，避免 ESLint 报错
+
+```ts
+// ❌ BAD：导入后未使用
+import { ref, onMounted, reactive, computed, type Ref } from "vue";
+
+// ✅ GOOD：去掉未使用项
+import { ref, onMounted, reactive, computed } from "vue";
+
+// ❌ BAD：形参未用且无 _ 前缀
+function openDialog(row?: FormItemProps, tableRef?: Ref) { ... }
+
+// ✅ GOOD：不用的参数加 _，或直接从签名删除
+function openDialog(row?: FormItemProps) { ... }
+function onSelect(_row: unknown) { ... }
+```
+
+## 原则
+
+- 以本地 ESLint 提示为准；出现 `'X' is defined but never used` 时优先删除，确需占位再用 `_` 前缀
+- 不要用 `eslint-disable` 掩盖可直接删掉的未使用导入

@@ -1,0 +1,80 @@
+---
+description: 前端 TS/API 的 Prettier 换行约定（yz-mall-web-admin-pc）
+globs: yz-mall-web-admin-pc/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# 前端 TS / API 格式（Prettier）
+
+编辑 `yz-mall-web-admin-pc` 下 `.ts` / `.tsx`（尤其 `src/api/**`）时，须符合项目 Prettier（`prettier/prettier`）。以本地 ESLint 提示为准，勿机械套用「一律分行」或「一律单行」。
+
+## `http.request`：按是否放得下决定换行
+
+- **仅 method + url、且一行够短**：保持单行
+- **带 `{ data }` 等 options，或整行过长**：method、url、options 各占一行
+
+```ts
+// ✅ 短调用：单行
+export const getSkuStockByProductId = (productId?: string | number) => {
+  return http.request<Result>("get", baseUrlApi(`/pms/stock/sku/${productId}`));
+};
+
+// ❌ BAD：短调用被多余拆行，Prettier 会收成一行
+return http.request<Result>(
+  "get",
+  baseUrlApi(`/pms/stock/sku/${productId}`)
+);
+
+// ✅ 带 options / 较长 URL：分行
+export const omsRefundApply = (data: OmsRefundApply) => {
+  return http.request<Result>(
+    "post",
+    baseUrlApi("/oms/order/mine/refund/apply"),
+    {
+      data
+    }
+  );
+};
+
+// ❌ BAD：带 options 却挤在同一行
+return http.request<Result>("post", baseUrlApi("/oms/order/mine/refund/apply"), {
+  data
+});
+```
+
+## JSX：属性能放同一行就不要拆
+
+简单 `el-button`（少量短属性）属性写在同一行；属性多或含复杂表达式再拆行。
+
+```tsx
+// ✅ GOOD
+<el-button link type="primary" onClick={() => openSkuStockDialog(row)}>
+  {row.quantity ?? 0}
+</el-button>
+
+// ❌ BAD：属性被多余拆行
+<el-button
+  link
+  type="primary"
+  onClick={() => openSkuStockDialog(row)}
+>
+```
+
+## JSX 短路渲染：单行子节点不要加括号换行
+
+```tsx
+// ❌ BAD
+{orderStatus === 7 && (
+  <el-button disabled>退款审核中</el-button>
+)}
+
+// ✅ GOOD
+{orderStatus === 7 && <el-button disabled>退款审核中</el-button>}
+```
+
+子节点本身已因多属性而换行时，可保留外层括号。
+
+## 原则
+
+- 出现 `prettier/prettier` 的 Replace 提示时，按提示方向改（拆行或收行），不要凭经验硬套
+- Vue 模板相关换行见同目录 `frontend-vue-template.mdc`

@@ -1,0 +1,43 @@
+---
+description: Vue 模板 Prettier 换行约定（yz-mall-web-admin-pc）
+globs: yz-mall-web-admin-pc/**/*.vue
+alwaysApply: false
+---
+
+# Vue 模板格式（Prettier）
+
+编辑 `yz-mall-web-admin-pc` 下 `.vue` 时，模板须符合项目 Prettier（`prettier/prettier`），避免 ESLint 报 `Insert ⏎……`。
+
+## 标签内「文案 + 插值」换行
+
+`<el-col>` / 同类标签中，**起始标签后的固定文案**与 **`{{ }}` 插值**不要挤在同一行；把插值换到下一行。
+
+```vue
+<!-- ❌ BAD：文案与插值同一行，Prettier 会要求换行 -->
+<el-col :span="16" class="colProduct"
+  >SKU: {{ product.skuName || product.skuId || "默认规格" }}</el-col
+>
+
+<!-- ✅ GOOD -->
+<el-col :span="16" class="colProduct"
+  >SKU:
+  {{ product.skuName || product.skuId || "默认规格" }}</el-col
+>
+
+<!-- ❌ BAD -->
+<el-col :span="8" class="colProduct"
+  >共减: ￥ {{ formatAmount(product.discountAmount || 0) }}</el-col
+>
+
+<!-- ✅ GOOD -->
+<el-col :span="8" class="colProduct"
+  >共减: ￥
+  {{ formatAmount(product.discountAmount || 0) }}</el-col
+>
+```
+
+## 原则
+
+- 以本地 Prettier / ESLint 为准；冲突时先按上述方式拆开「标签文案」与「插值」
+- 不要为「看起来对齐」把本可一行的短属性无故拆成多行；长插值表达式再换行
+- 修改 Vue 模板后若出现 `prettier/prettier` 的 Insert 换行提示，优先采用「文案一行、插值下一行」修法
