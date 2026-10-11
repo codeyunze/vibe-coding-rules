@@ -1,0 +1,42 @@
+---
+description: Java JSON 禁止 Hutool JSONObject/JSONUtil，统一用 Jackson
+globs: "**/*.java"
+alwaysApply: true
+---
+
+# Java JSON：禁止 Hutool，统一 Jackson
+
+## 红线
+
+**禁止**在 Java 代码中使用 Hutool JSON：
+
+- `cn.hutool.json.JSONObject`
+- `cn.hutool.json.JSONArray`
+- `cn.hutool.json.JSONUtil`（含 `parseObj` / `toJsonStr` / `toBean` 等）
+
+既有代码改动时若触及上述 API，应一并改为 Jackson，禁止新增引用。
+
+## 正确做法
+
+| 场景 | 用法 |
+|------|------|
+| 取 ObjectMapper | `JacksonUtil.getObjectMapper()`（`com.yz.mall.json.JacksonUtil`） |
+| 序列化 | `objectMapper.writeValueAsString(obj)` |
+| 反序列化对象 | `objectMapper.readValue(json, Xxx.class)` / `TypeReference` |
+| 读树 / 逐字段 | `objectMapper.readTree(json)` → `JsonNode` |
+
+```java
+// ❌ BAD
+JSONObject json = JSONUtil.parseObj(raw);
+String out = JSONUtil.toJsonStr(map);
+
+// ✅ GOOD
+ObjectMapper om = JacksonUtil.getObjectMapper();
+JsonNode json = om.readTree(raw);
+String out = om.writeValueAsString(map);
+```
+
+## 说明
+
+- Hutool 其它工具（`StrUtil`、`IdUtil` 等）不在本禁令范围
+- 仅 JSON 序列化/解析统一走 Jackson，与 Spring MVC / 项目现有栈一致

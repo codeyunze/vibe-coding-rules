@@ -16,6 +16,7 @@ alwaysApply: true
 - **保留有效注释**：原有注释若仍符合代码/配置作用，**禁止删除或替换掉**；仅当注释已过时、错误或与改动冲突时，才允许修改，且应改为正确说明（可在原注释上补充，不要整段抹掉再重写）
 - 命名与同事代码一致：`camelCase` 方法、`UpperCamel` 类、DTO/VO 后缀清晰
 - 日志用项目已有方式（如 `@Slf4j`）；禁止 `System.out` 作为正式日志
+- **JSON**：禁止 Hutool `JSONObject` / `JSONArray` / `JSONUtil`；统一 `JacksonUtil` / Jackson `ObjectMapper` / `JsonNode`（详见 `java-no-hutool-json`）
 - 并发与缓存：优先看是否已有 Redisson/工具封装，避免重复造轮子
 
 ## 安全底线
@@ -28,3 +29,4 @@ alwaysApply: true
 
 - 变更说明简洁：改了什么、为何改；不写空洞的「提升代码质量」
 - 若引入新依赖：必须与父 POM 版本管理对齐，禁止子系统私自锁定冲突版本
+- **Git**：未明确要求时禁止 `commit`；**更严禁**未明确要求时执行任何形式的 `git push` / 推送到远程（详见 `git-no-push` 规则）

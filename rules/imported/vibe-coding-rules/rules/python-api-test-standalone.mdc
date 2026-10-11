@@ -1,0 +1,31 @@
+---
+description: Python API 测试脚本必须单文件独立可跑，禁止依赖其它 py/配置
+globs: "**/src/test/python/**/*.py"
+alwaysApply: true
+---
+
+# Python API 脚本：单文件独立运行
+
+## 红线
+
+`**/src/test/python/**/test_*.py`（及同目录验收脚本）：
+
+- **禁止** `import` 同目录或其它项目内 `.py`（含 `_common.py`、工具包）
+- **禁止** 依赖同目录配置文件（`.ini` / `.yaml` / `.env` 等）；参数只用**环境变量**
+- **禁止** 多文件才构成可跑场景；上传定时平台时必须「单文件即可执行」
+
+允许：标准库；运行时第三方仅限脚本内自行 `import requests`（缺失则提示并非 0 退出）。
+
+## 正确形态
+
+每个脚本自包含：读 `BASE_URL` / `TOKEN` 等 → 发 HTTP → 断言 → `sys.exit(0|1|2)`。
+
+```python
+# ❌ BAD
+from _common import base_url, auth_headers
+
+# ✅ GOOD
+base = os.environ.get("BASE_URL", "").rstrip("/")
+token = os.environ.get("TOKEN", "")
+headers = {"Authorization": token} if token else {}
+```
